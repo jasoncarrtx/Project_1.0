@@ -1,21 +1,433 @@
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Compiled Dynamic libraries
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+# C extensions
 *.so
-*.dylib
-*.dll
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+# Distribution / packaging
+.Python
+env/
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+# Translations
+*.mo
+# Mr Developer
+.mr.developer.cfg
+.project
+.pydevproject
+# Rope
+.ropeproject
+# Django stuff:
+*.log
+*.pot
+# Sphinx documentation
+docs/_build/
+#include <SPI.h>
+#include <Dhcp.h>
+#include <Dns.h>
+#include <Ethernet.h>
+#include <EthernetClient.h>
+#include <EthernetServer.h>
+#include <EthernetUdp.h>
+#include <util.h>
+byte mac[] = { 0x90 ,0xA2 ,0xDA ,0x0D ,0xA6 ,0xF8 }; //physical mac address
+byte ip[] = { 192, 168, 1, 104}; // ip in lan
+byte subnet[] = { 255, 255, 255, 0 }; //subnet mask
+byte gateway[] = { 192, 168, 1, 1 }; // default gateway
+EthernetServer server(80); //server90/port
+double val;
+EthernetClient customer;
+int flipper_right_front = 8;
+int flipper_right_back = 12;
+int flipper_left_front = 9;
+int flipper_left_back = 11;
+int track_right_front = 6;
+int track_right_back = 7;
+int track_left_front = 4;
+int track_left_back = 5;
+double encoder_val;
+double enc_rfl;
+double enc_rfr;
+double enc_bfr;
+double enc_bfl;
+int special_brake = 130;
+int brake = 135;
+int fwd = 195/*185*/;
+int rev = 60/*70*/;
+int a=0;
+int b=0;
+int c=0;
+int d=0;
+int x=0;
+int y=0;
+void setup()
+{
+  Ethernet.begin(mac,ip,gateway,subnet);
+  server.begin();
+  Serial.begin(9600);
+  pinMode(flipper_right_front , OUTPUT);
+  pinMode(flipper_right_back , OUTPUT);
+  pinMode(flipper_left_front , OUTPUT);
+  pinMode(flipper_left_back , OUTPUT);
+  pinMode(track_right_front , OUTPUT);
+  pinMode(track_right_back , OUTPUT);
+  pinMode(track_left_front , OUTPUT);
+  pinMode(track_left_back , OUTPUT);
+}
+void loop()
+{
+         // Serial.println("Analog read");
+          enc_rfl=analogRead(0);
+          enc_rfl=(enc_rfl/1024)*5; 
+         Serial.println(enc_rfl);
+          enc_rfr=analogRead(3);
+          enc_rfr=(enc_rfr/1024)*5; 
+          Serial.println(enc_rfr);
+          enc_bfl=analogRead(2);
+          enc_bfl=(enc_bfl/1024)*5; 
+          Serial.println(enc_bfl);
+          enc_bfr=analogRead(1);
+          enc_bfr=(enc_bfr/1024)*5; 
+         Serial.println(enc_bfr);                        
+ for (int dp=0 ; dp<1000 ; dp++ )
+          {
+          analogWrite(flipper_right_front, brake-3);
+          analogWrite(flipper_right_back, brake-10);
+          analogWrite(flipper_left_front, brake-6);
+          analogWrite(flipper_left_back, brake-3);
+          }
+          analogWrite(track_right_front, brake-3);
+          analogWrite(track_right_back, brake-10);
+          analogWrite(track_left_front, brake);
+          analogWrite(track_left_back, brake);
+  EthernetClient customer = server.available();
+  char rec;
+Serial.flush(); 
+rec  = customer.read();
+  Serial.println (rec);
+  // 'a' for brakes
+  if (rec == 'a')
+    {
+      while(rec=='a')
+      {
+          Serial.println("Free All Brake");
+          analogWrite(flipper_right_front, brake-3);
+          analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, brake-6);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, brake);
+          analogWrite(track_right_back, special_brake);
+          analogWrite(track_left_front, brake);
+          analogWrite(track_left_back, brake);
+          rec  = customer.read();
+          delay(75);
+      }
+    }  
+  // 'b' for forward  
+  else if (rec == 'b')
+    {
+      while(rec=='b')
+      {
+          Serial.println("Mode b");
+          analogWrite(flipper_right_front, brake-3);
+          analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, brake-6);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, fwd);
+          analogWrite(track_right_back, fwd);
+          analogWrite(track_left_front, fwd);
+          analogWrite(track_left_back, fwd);
+          rec  = customer.read();
+          delay(75);
+      }
+    }  
+  // 'c' for turn left  
+  else if (rec == 'c')
+    {
+       while(rec=='c')
+      {
+          Serial.println("Mode c");
+          analogWrite(flipper_right_front, brake-3);
+          analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, brake-6);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, fwd+20);
+          analogWrite(track_right_back, fwd+20);
+          analogWrite(track_left_front, rev-20);
+          analogWrite(track_left_back, rev-20);
+          rec  = customer.read();
+          delay(75);
+      }
+    }
+  // 'd' for turn right  
+  else if (rec == 'd')
+    {
+      while(rec=='d')
+      {
+          Serial.println("Mode d");
+          analogWrite(flipper_right_front, brake-3);
+          analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, brake-6);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, rev-20);
+          analogWrite(track_right_back, rev-20);
+          analogWrite(track_left_front, fwd+20);
+          analogWrite(track_left_back, fwd+20);
+          rec  = customer.read();
+          delay(75);
+      }
+    } 
+    
+   // 'e' for reverse 
+   else if (rec == 'e')
+    {
+      while(rec=='e')
+      {
+          Serial.println("Mode e");
+          analogWrite(flipper_right_front, brake-3);
+          analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, brake-6);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, rev);
+          analogWrite(track_right_back, rev);
+          analogWrite(track_left_front, rev);
+          analogWrite(track_left_back, rev);
+          rec  = customer.read();
+          delay(75);
+      }
+    } 
+   // 'f' for moving right front flipper forward
+    else if (rec == 'g')
+    {
+      while(rec=='g')
+      {
+          Serial.println("Mode g");
+          analogWrite(flipper_right_front, fwd);
+        analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, brake-6);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, brake);
+          analogWrite(track_right_back, special_brake);
+          analogWrite(track_left_front, brake);
+          analogWrite(track_left_back, brake);
+          rec  = customer.read();
+          delay(75);
+      }
+    } 
+    else if (rec == 't')
+    {
+      while(rec=='t')
+      {
+          Serial.println("Mode t");
+          analogWrite(flipper_right_front, fwd);
+        analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, rev/*brake-6*/);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, brake);
+          analogWrite(track_right_back, special_brake);
+          analogWrite(track_left_front, brake);
+          analogWrite(track_left_back, brake);
+          rec  = customer.read();
+          delay(75);
+      }
+    } 
+    else if (rec == 'y')
+    {
+      float c1=0;
+      float c11=0;
+      float c2=0;
+      float c22=0;
+      int s1=0;
+      while(rec=='y')
+      {
+          Serial.println("Mode y");
+               enc_rfl=analogRead(0);
+          c1=5-((enc_rfl/1024)*5); 
+         // Serial.println(enc_rfl);
+          enc_rfr=analogRead(3);
+          c2=(enc_rfr/1024)*5; 
+          analogWrite(flipper_right_front, rev);
+        analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, fwd+s1+17/*brake-6*/);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, brake);
+          analogWrite(track_right_back, special_brake);
+          analogWrite(track_left_front, brake);
+          analogWrite(track_left_back, brake);
+          rec  = customer.read();
+          delay(75);
+          enc_rfl=analogRead(0);
+          c11=5-((enc_rfl/1024)*5); 
+          enc_rfr=analogRead(3);
+          c22=(enc_rfr/1024)*5; 
+           Serial.println(s1);
+           Serial.println(c11-c1);
+           Serial.println(c22-c2);
+           if(((c11-c1)<(c22-c2))&&(((c11-c1)<1)&&((c22-c2)<1))&&((s1<7)&&(s1>-7)))
+           {
+             s1=s1-1;
+           }
+               else if(((c11-c1)>(c22-c2))&&(((c11-c1)<1)&&((c22-c2)<1))&&((s1<7)&&(s1>-7)))
+           {
+             s1=s1+1;
+           }
+           else if ((s1>6)||(s1<-6))
+           {
+             s1=0;
+           }
+           else 
+           {
+             s1=s1;
+           }
+      }
+    } 
+    // 'g' for moving right front flipper reverse
+    else if (rec == 'f')
+    {
+      while(rec=='f')
+      {
+          Serial.println("Mode f");
+          analogWrite(flipper_right_front, rev);        
+          analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, brake-6);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, brake);
+          analogWrite(track_right_back, special_brake);
+          analogWrite(track_left_front, brake);
+          analogWrite(track_left_back, brake);
+          rec  = customer.read();
+          delay(75);
+      }
+    } 
+  
+  // 'h' for moving left front flipper forward
+    else if (rec == 'h')
+    {
+      while(rec=='h')
+      {
+          Serial.println("Mode h");
+          analogWrite(flipper_right_front, brake-3);
+          analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, fwd);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, brake);
+          analogWrite(track_right_back, special_brake);
+          analogWrite(track_left_front, brake);
+          analogWrite(track_left_back, brake);
+          rec  = customer.read();
+          delay(75);
+      }
+    } 
+    // 'i' for moving left front flipper reverse
+    else if (rec == 'i')
+    {
+      while(rec=='i')
+      {
+          Serial.println("Mode i");
+          analogWrite(flipper_right_front, brake-3);
+          analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, rev);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, brake);
+          analogWrite(track_right_back, special_brake);
+          analogWrite(track_left_front, brake);
+          analogWrite(track_left_back, brake);
+          rec  = customer.read();
+          delay(75);
+      }
+    } 
+    
+    // 'j' for moving right back flipper forward
+    else if (rec == 'j')
+    {
+      while(rec=='j')
+      {
+          Serial.println("Mode j");
+          analogWrite(flipper_right_front, brake-3);
+          analogWrite(flipper_right_back, fwd);
+          analogWrite(flipper_left_front, brake-6);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, brake);
+          analogWrite(track_right_back, special_brake);
+          analogWrite(track_left_front, brake);
+          analogWrite(track_left_back, brake);
+          rec  = customer.read();
+          delay(75);
+      }
+    } 
+    // 'k' for moving right back flipper reverse
+    else if (rec == 'k')
+    {
+      while(rec=='k')
+      {
+          Serial.println("Mode k");
+          analogWrite(flipper_right_front, brake-3);
+          analogWrite(flipper_right_back, rev);
+          analogWrite(flipper_left_front, brake-6);
+          analogWrite(flipper_left_back, brake);
+          analogWrite(track_right_front, brake);
+          analogWrite(track_right_back, special_brake);
+          analogWrite(track_left_front, brake);
+          analogWrite(track_left_back, brake);
+          rec  = customer.read();
+          delay(75);
+      }
+    } 
+    
+    // 'l' for moving left back flipper forward
+    else if (rec == 'l')
+    {
+      while(rec=='l')
+      {
+          Serial.println("Mode l");
+          analogWrite(flipper_right_front, brake-3);
+          analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, brake-6);
+          analogWrite(flipper_left_back, fwd);
+          analogWrite(track_right_front, brake);
+          analogWrite(track_right_back, special_brake);
+          analogWrite(track_left_front, brake);
+          analogWrite(track_left_back, brake);
+          rec  = customer.read();
+          delay(75);
+      }
+    } 
+    // 'm' for moving left back flipper reverse
+    else if (rec == 'm')
+    {
+      while(rec=='m')
+      {
+          Serial.println("Mode m");
+          analogWrite(flipper_right_front, brake-3);
+          analogWrite(flipper_right_back, brake);
+          analogWrite(flipper_left_front, brake-6);
+          analogWrite(flipper_left_back, rev);
+          analogWrite(track_right_front, brake);
+          analogWrite(track_right_back, special_brake);
+          analogWrite(track_left_front, brake);
+          analogWrite(track_left_back, brake);
+          rec  = customer.read();
+          delay(75);
+      }
+    } 
+}
