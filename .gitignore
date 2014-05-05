@@ -1,48 +1,28 @@
-# Byte-compiled / optimized / DLL files
-__pycache__/
-*.py[cod]
-# C extensions
+# Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Libraries
+*.lib
+*.a
+
+# Shared objects (inc. Windows DLLs)
+*.dll
 *.so
-# Distribution / packaging
-.Python
-env/
-bin/
-build/
-develop-eggs/
-dist/
-eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.coverage
-.cache
-nosetests.xml
-coverage.xml
-# Translations
-*.mo
-# Mr Developer
-.mr.developer.cfg
-.project
-.pydevproject
-# Rope
-.ropeproject
-# Django stuff:
-*.log
-*.pot
-# Sphinx documentation
-docs/_build/
+*.so.*
+*.dylib
+
+# Executables
+*.exe
+*.out
+*.app
+*.i*86
+*.x86_64
+*.hex
 #include <SPI.h>
+
 #include <Dhcp.h>
 #include <Dns.h>
 #include <Ethernet.h>
@@ -50,6 +30,7 @@ docs/_build/
 #include <EthernetServer.h>
 #include <EthernetUdp.h>
 #include <util.h>
+
 byte mac[] = { 0x90 ,0xA2 ,0xDA ,0x0D ,0xA6 ,0xF8 }; //physical mac address
 byte ip[] = { 192, 168, 1, 104}; // ip in lan
 byte subnet[] = { 255, 255, 255, 0 }; //subnet mask
@@ -61,10 +42,12 @@ int flipper_right_front = 8;
 int flipper_right_back = 12;
 int flipper_left_front = 9;
 int flipper_left_back = 11;
+
 int track_right_front = 6;
 int track_right_back = 7;
 int track_left_front = 4;
 int track_left_back = 5;
+
 double encoder_val;
 double enc_rfl;
 double enc_rfr;
@@ -74,17 +57,20 @@ int special_brake = 130;
 int brake = 135;
 int fwd = 195/*185*/;
 int rev = 60/*70*/;
+
 int a=0;
 int b=0;
 int c=0;
 int d=0;
 int x=0;
 int y=0;
+
 void setup()
 {
   Ethernet.begin(mac,ip,gateway,subnet);
   server.begin();
   Serial.begin(9600);
+  
   pinMode(flipper_right_front , OUTPUT);
   pinMode(flipper_right_back , OUTPUT);
   pinMode(flipper_left_front , OUTPUT);
@@ -94,8 +80,10 @@ void setup()
   pinMode(track_left_front , OUTPUT);
   pinMode(track_left_back , OUTPUT);
 }
+
 void loop()
 {
+  
          // Serial.println("Analog read");
           enc_rfl=analogRead(0);
           enc_rfl=(enc_rfl/1024)*5; 
@@ -109,6 +97,7 @@ void loop()
           enc_bfr=analogRead(1);
           enc_bfr=(enc_bfr/1024)*5; 
          Serial.println(enc_bfr);                        
+          
  for (int dp=0 ; dp<1000 ; dp++ )
           {
           analogWrite(flipper_right_front, brake-3);
@@ -120,6 +109,7 @@ void loop()
           analogWrite(track_right_back, brake-10);
           analogWrite(track_left_front, brake);
           analogWrite(track_left_back, brake);
+  
   EthernetClient customer = server.available();
   char rec;
 Serial.flush(); 
@@ -141,6 +131,7 @@ rec  = customer.read();
           analogWrite(track_left_back, brake);
           rec  = customer.read();
           delay(75);
+      
       }
     }  
   // 'b' for forward  
@@ -179,6 +170,7 @@ rec  = customer.read();
           delay(75);
       }
     }
+    
   // 'd' for turn right  
   else if (rec == 'd')
     {
@@ -230,6 +222,7 @@ rec  = customer.read();
           analogWrite(track_right_back, special_brake);
           analogWrite(track_left_front, brake);
           analogWrite(track_left_back, brake);
+          
           rec  = customer.read();
           delay(75);
       }
@@ -247,6 +240,7 @@ rec  = customer.read();
           analogWrite(track_right_back, special_brake);
           analogWrite(track_left_front, brake);
           analogWrite(track_left_back, brake);
+          
           rec  = customer.read();
           delay(75);
       }
@@ -274,15 +268,18 @@ rec  = customer.read();
           analogWrite(track_right_back, special_brake);
           analogWrite(track_left_front, brake);
           analogWrite(track_left_back, brake);
+          
           rec  = customer.read();
           delay(75);
           enc_rfl=analogRead(0);
           c11=5-((enc_rfl/1024)*5); 
+          
           enc_rfr=analogRead(3);
           c22=(enc_rfr/1024)*5; 
            Serial.println(s1);
            Serial.println(c11-c1);
            Serial.println(c22-c2);
+           
            if(((c11-c1)<(c22-c2))&&(((c11-c1)<1)&&((c22-c2)<1))&&((s1<7)&&(s1>-7)))
            {
              s1=s1-1;
@@ -299,11 +296,15 @@ rec  = customer.read();
            {
              s1=s1;
            }
+           
+          
+          
       }
     } 
     // 'g' for moving right front flipper reverse
     else if (rec == 'f')
     {
+      
       while(rec=='f')
       {
           Serial.println("Mode f");
